@@ -1,0 +1,1 @@
+Checking for unusual user agent strings in web server logs. Identifying potential bot activity or malicious scanners.

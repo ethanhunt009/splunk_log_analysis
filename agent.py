@@ -7,31 +7,52 @@ from langchain_core.tools import StructuredTool
 from langchain_community.document_loaders.firecrawl import FireCrawlLoader
 from pydantic import BaseModel
 from dotenv import load_dotenv
-
+from pymongo import MongoClient
 import paramiko
 
+
+
+
+ 
 #-------------------------------------------------------
-
-
-#-------------------------------------------------------
-
-def read_splunk_log(string :str):
-    """Read the splunk csv log file"""
+def load_splunk_csv(string :str):
     try:
-        data =[]
-        with open("normal_system_logs.csv", mode = 'r') as file:
-            content = csv.reader(file)
-            for row in content:
-                data.append(row)
-        return data
-    except FileNotFoundError:
-        content = "Log file not found."
+        client = MongoClient("mongodb://localhost:27017/")
+        db = client["LOG"]  # Your database name
+        collection = db["LOGGING"]  # Your collection name
+        with open("normal_system_logs.csv", "r") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                collection.insert_one(row)
+    except Exception as e:
+        #print(f"Exception : {e}")
+        return f"this error occured {e}, simplify it"
 
-splunk_tool = Tool(
-    name = "read_splunk_log",
-    description="Read the splunk log file",
-    func=read_splunk_log,
+splunk_csv_load_tool = Tool(
+    name="load_splunk_csv",
+    description="This tool used to load csv files in chat memory, which has splunk aggregated logs, and do not use it to load any other csv here!, You do not need to give the csv file location. Again this tool only load csv in mongodb",
+    func=load_splunk_csv,
 )
+
+#-------------------------------------------------------
+
+#def read_splunk_log(string :str):
+#    """Read the splunk csv log file"""
+#    try:
+#        data =[]
+#        with open("normal_system_logs.csv", mode = 'r') as file:
+#            content = csv.reader(file)
+#            for row in content:
+#                data.append(row)
+#        return data
+#    except FileNotFoundError:
+#        content = "Log file not found."
+
+#splunk_tool = Tool(
+#    name = "read_splunk_log",
+#    description="Read the splunk log file",
+#    func=read_splunk_log,
+#)
 #-------------------------------------------------------
 
 def report_anomaly(report: str):
@@ -82,3 +103,18 @@ update_suricata_rule_tool = Tool(
 )
 #-------------------------------------------------------
 
+def read_splunk_logs(string :str):
+    try:
+        content=""
+        with open("", r) as file:
+            content = file.read()
+        return content
+    except Exception as e:
+        return f"Error happened, explain it gracefully {e}"
+
+splunk_log_read = Tool(
+    name="Splunk log reading tool",
+    description = "Tool used to read the splunk logs",
+    func = read_splunk_logs,
+)
+#-------------------------------------------------------
